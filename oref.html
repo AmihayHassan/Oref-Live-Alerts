@@ -52,7 +52,7 @@
             max-height: 85vh;
             margin-bottom: 8rem; border: 0.1rem solid rgba(255, 255, 255, 0.2);
             background: rgba(255, 255, 255, 0.12); z-index: 10;
-            overflow: visible; /* Fixed: allows absolute positioned dropdown to pop out */
+            overflow: visible;
             transition: background-color 0.8s ease, border-color 0.8s ease, max-height 0.6s ease, margin 0.6s ease;
         }
 
@@ -106,13 +106,12 @@
         .custom-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 1rem; }
 
-        #offlineModal { transition: opacity 0.4s ease, visibility 0.4s ease; z-index: 100; }
+        #offlineModal, #settingsModal { transition: opacity 0.4s ease, visibility 0.4s ease; z-index: 100; }
         .modal-visible { opacity: 1; visibility: visible; }
         .modal-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         @keyframes pulse-soft { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(0.99); } }
         .animate-pulse-soft { animation: pulse-soft 2.5s infinite ease-in-out; }
 
-        /* Strong Glowing Effects */
         .dot-glow-GREEN { filter: drop-shadow(0 0 10px rgba(74, 222, 128, 0.95)) !important; }
         .dot-glow-ORANGE { filter: drop-shadow(0 0 10px rgba(251, 146, 60, 0.95)) !important; }
         .dot-glow-RED { filter: drop-shadow(0 0 10px rgba(248, 113, 113, 0.95)) !important; }
@@ -129,7 +128,6 @@
         .clear-btn:hover { background: rgba(0, 0, 0, 0.15); color: #111; transform: translateY(-50%) scale(1.1); }
         .dark .clear-btn:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
 
-        /* Fixed Button Styles - Clean implementation to prevent background artifacts */
         .btn-header {
             display: flex; align-items: center; gap: 0.5rem; padding: 0 1.25rem;
             height: 2.75rem; border-radius: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2);
@@ -146,6 +144,24 @@
 
     <div style="display: none;" class="bg-green-400 bg-orange-400 bg-red-500 bg-red-600/90 bg-orange-500/90 bg-green-700/80 border-red-400/50 border-orange-400/50 border-green-400/50 bg-red-950 bg-red-600 bg-orange-950 bg-orange-500 bg-green-950 bg-green-500 text-white"></div>
 
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-2xl modal-hidden z-[100]">
+        <div class="bg-black/80 border border-white/10 p-10 md:p-12 rounded-[3.5rem] text-center shadow-[0_2rem_5rem_rgba(0,0,0,0.6)] w-full max-w-lg">
+            <h2 class="text-white text-3xl font-bold mb-8 tracking-tight">הגדרות שרת</h2>
+            <div class="text-right mb-6">
+                <label class="text-white/60 text-sm font-bold uppercase tracking-wider block mb-2 mr-2">כתובת ה-Proxy (Host)</label>
+                <input id="proxyInput" type="text" placeholder="localhost:8080"
+                       class="w-full p-5 rounded-2xl bg-white/5 border border-white/10 text-white text-xl font-medium focus:outline-none focus:ring-4 focus:ring-blue-500/30 transition-all text-left" dir="ltr">
+                <p class="text-white/40 text-sm mt-3 leading-relaxed mr-2">הזן את כתובת ה-IP והפורט של שרת ה-Proxy שלך. ברירת המחדל היא localhost:8080.</p>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="saveSettings()" class="flex-1 py-4 bg-white text-black font-bold rounded-2xl hover:scale-105 active:scale-95 transition-all text-lg shadow-xl">שמור שינויים</button>
+                <button onclick="toggleSettingsModal()" class="flex-1 py-4 bg-white/10 text-white font-bold rounded-2xl hover:bg-white/20 active:scale-95 transition-all text-lg border border-white/5">ביטול</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offline Modal -->
     <div id="offlineModal" class="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-2xl modal-hidden">
         <div class="bg-black/80 border border-white/10 p-10 md:p-14 rounded-[3.5rem] text-center shadow-[0_2rem_5rem_rgba(0,0,0,0.6)] max-w-[90vw] animate-pulse-soft">
             <div class="flex justify-center mb-6">
@@ -163,14 +179,20 @@
     <div class="fixed top-6 left-6 right-6 flex justify-between items-center z-50 pointer-events-none">
         <div class="flex gap-3 pointer-events-auto opacity-0"><div class="w-11 h-11"></div></div>
         <div class="flex gap-3 pointer-events-auto">
+            <button onclick="toggleSettingsModal()" class="btn-header !w-11 !px-0 justify-center !rounded-full" title="הגדרות">
+                <svg xmlns="http://www.w3.org/2000/svg" width="1.4rem" height="1.4rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </button>
             <button onclick="toggleSplitScreen()" id="splitToggle" class="btn-header">
                 <svg xmlns="http://www.w3.org/2000/svg" width="1.1rem" height="1.1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="3" x2="12" y2="21"></line></svg>
                 <span id="splitText">פיצול מסך</span>
             </button>
             <button onclick="toggleDarkMode()" id="darkToggle" class="btn-header !w-11 !px-0 justify-center !rounded-full">
-                <!-- Moon icon shown when in Light mode to indicate switching to Dark -->
+                <!-- Indicating target state: Moon when currently light -->
                 <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="1.4rem" height="1.4rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                <!-- Sun icon shown when in Dark mode to indicate switching to Light -->
+                <!-- Indicating target state: Sun when currently dark -->
                 <svg id="sunIcon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="1.4rem" height="1.4rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="5"></circle>
                     <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -178,7 +200,7 @@
                     <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
                     <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
                     <line x1="1" y1="12" x2="3" y2="12"></line>
-                    <line x1="21" y1="12" x2="23" y2="12"></line> <!-- Fixed right ray coordinate x2=23 -->
+                    <line x1="21" y1="12" x2="23" y2="12"></line> <!-- Fixed coordinates -->
                     <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
                     <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                 </svg>
@@ -186,7 +208,7 @@
         </div>
     </div>
 
-    <!-- Wrapper for Views -->
+    <!-- Main Dynamic Layout -->
     <div id="mainWrapper" class="single-layout"></div>
 
     <!-- Global Footer Stats -->
@@ -202,7 +224,10 @@
     </div>
 
     <script>
-        const proxyBaseUrl = 'http://localhost:8080/?url=';
+        // --- Persistence Management ---
+        let proxyHost = localStorage.getItem('oref_proxy_host') || "localhost:8080";
+        const getProxyBaseUrl = () => `http://${proxyHost}/?url=`;
+
         const displayFormatter = new Intl.DateTimeFormat('he-IL', {
             year: 'numeric', month: 'numeric', day: 'numeric',
             hour: '2-digit', minute: '2-digit', second: '2-digit',
@@ -226,6 +251,24 @@
         };
 
         const stateColors = { 'GREEN': 'bg-green-400', 'ORANGE': 'bg-orange-400', 'RED': 'bg-red-500' };
+
+        function saveSettings() {
+            const host = document.getElementById('proxyInput').value.trim() || "localhost:8080";
+            proxyHost = host;
+            localStorage.setItem('oref_proxy_host', host);
+            toggleSettingsModal();
+            // Fresh update using new host
+            pollHistory();
+            checkAlerts();
+            fetchFullHistory();
+        }
+
+        function toggleSettingsModal() {
+            const modal = document.getElementById('settingsModal');
+            document.getElementById('proxyInput').value = proxyHost;
+            modal.classList.toggle('modal-hidden');
+            modal.classList.toggle('modal-visible');
+        }
 
         async function fetchWithTimeout(resource, options = {}) {
             const { timeout = 5000 } = options;
@@ -277,7 +320,7 @@
                         <div id="viewContainer-${index}" class="status-container flex-shrink-0">
                             <div id="transitionBanner-${index}" class="transition-banner flex flex-col items-center hidden-banner flex-fixed">
                                 <div id="bannerInner-${index}" class="flex items-center gap-4 bg-black/40 dark:bg-white/10 px-5 py-2.5 rounded-full border border-white/20 scale-[0.9]">
-                                    <div id="fromCircle-${index}" class="w-3.5 h-3.5 rounded-full transition-all duration-500"></div>
+                                    <div id="fromCircle-${index}" class="w-3.5 h-3.5 rounded-full shadow-sm transition-all duration-500"></div>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="1.1rem" height="1.1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-white/80"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                                     <div id="toCircle-${index}" class="w-3.5 h-3.5 rounded-full shadow-sm transition-all duration-500"></div>
                                     <span id="changeTime-${index}" class="mr-3 text-[1.05rem] font-medium text-white leading-none tracking-tight transition-all duration-500"></span>
@@ -508,7 +551,7 @@
         async function fetchFullHistory() {
             if (appState.isFullHistoryLoaded) return;
             try {
-                const res = await fetchWithTimeout(proxyBaseUrl + encodeURIComponent('https://alerts-history.oref.org.il//Shared/Ajax/GetAlarmsHistory.aspx?lang=he&fromDate=07.10.2023&toDate=&mode=0'), { timeout: 10000 });
+                const res = await fetchWithTimeout(getProxyBaseUrl() + encodeURIComponent('https://alerts-history.oref.org.il//Shared/Ajax/GetAlarmsHistory.aspx?lang=he&fromDate=07.10.2023&toDate=&mode=0'), { timeout: 10000 });
                 if (!res.ok) return;
                 const data = await res.json(), reversed = [...data].reverse(), CHUNK_SIZE = 150;
                 for (let i = 0; i < reversed.length; i += CHUNK_SIZE) {
@@ -525,7 +568,7 @@
 
         async function pollHistory() {
             try {
-                const res = await fetchWithTimeout(proxyBaseUrl + encodeURIComponent('https://www.oref.org.il/warningMessages/alert/History/AlertsHistory.json?v=' + Date.now()));
+                const res = await fetchWithTimeout(getProxyBaseUrl() + encodeURIComponent('https://www.oref.org.il/warningMessages/alert/History/AlertsHistory.json?v=' + Date.now()));
                 if (!res.ok) return;
                 const data = await res.json(); setServerStatus(true);
                 data.forEach(item => {
@@ -538,7 +581,7 @@
 
         async function checkAlerts() {
             try {
-                const res = await fetchWithTimeout(proxyBaseUrl + encodeURIComponent('https://www.oref.org.il/WarningMessages/alert/alerts.json?v=' + Date.now()));
+                const res = await fetchWithTimeout(getProxyBaseUrl() + encodeURIComponent('https://www.oref.org.il/WarningMessages/alert/alerts.json?v=' + Date.now()));
                 if (!res.ok) return;
                 const text = await res.text(); setServerStatus(true);
                 if (!text || text.trim() === '' || text.trim() === '[]') { appState.lastLiveAlertJson = null; appState.lastLiveAlertStartTime = null; return; }
@@ -555,7 +598,7 @@
             let combined = new Set();
             for (const url of urls) {
                 try {
-                    const res = await fetchWithTimeout(proxyBaseUrl + encodeURIComponent(url));
+                    const res = await fetchWithTimeout(getProxyBaseUrl() + encodeURIComponent(url));
                     if (res.ok) {
                         const data = await res.json();
                         (Array.isArray(data) ? data : (data.districts || data.cities || [])).forEach(i => combined.add(i.mixname || i.label || i.value || i.name));
@@ -580,6 +623,8 @@
         }
 
         window.onload = () => {
+            // Set initial proxy host to input
+            document.getElementById('proxyInput').value = proxyHost;
             initializeViews(); refreshUI(); fetchLocations(); pollHistory(); checkAlerts();
             setInterval(checkAlerts, 1000); setInterval(pollHistory, 5000); setInterval(updateClock, 100); setInterval(monitorConnection, 500);
         };
