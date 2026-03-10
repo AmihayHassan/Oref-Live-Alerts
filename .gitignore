@@ -1,0 +1,38 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+*.egg
+build/
+dist/
+
+# PyCharm specific files
+.idea/
+*.iml
+*.iws
+
+# Logs
+*.log
+*.txt
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Other
+*.bak
+*.swp
+*.tmp
+
+# Project-specific files
+/oref-beta.html
+/server-admin.bat

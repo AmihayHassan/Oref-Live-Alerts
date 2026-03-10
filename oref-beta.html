@@ -165,7 +165,7 @@
                     <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
                     <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
                     <line x1="1" y1="12" x2="3" y2="12"></line>
-                    <line x1="21" y1="12" x2="23" y2="12"></line> <!-- Fixed right ray coordinate -->
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
                     <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
                     <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                 </svg>
@@ -200,14 +200,16 @@
 
         const appState = {
             allCities: [],
-            cityStatus: {},
-            cityEvents: {},
-            globalEvents: [],
+            cityStatus: {}, // Current State { type, title, time, rawDate }
+            cityEvents: {}, // History per city [{ type, time, rawDate }]
+            globalEvents: [], // Global history [{ type, time, rawDate }]
             isSplit: false,
             isInitialLoad: true,
             isFetchingLocations: false,
             isFullHistoryLoaded: false,
             lastSuccessTime: Date.now(),
+            lastLiveAlertJson: null, // Track identical live alerts
+            lastLiveAlertStartTime: null,
             views: [
                 { id: 0, filter: '', lastVisualState: 'GREEN', lastTransition: null, simulation: null, _currentDisplayType: 'GREEN', _renderedTransition: null },
                 { id: 1, filter: '', lastVisualState: 'GREEN', lastTransition: null, simulation: null, _currentDisplayType: 'GREEN', _renderedTransition: null }
@@ -383,39 +385,26 @@
                 }
             }
 
-            // Stateful Transition Logic - Improved visibility for National mode
+            // Stateful Transition Logic
             let newTransition = null;
-            if (view.filter) {
-                const events = appState.cityEvents[view.filter] || [];
-                if (events.length > 0) {
-                    const latestEvent = events[0];
-                    const latestType = latestEvent.type;
-                    const transitionFromEvent = events.find(e => e.type !== latestType);
-                    if (transitionFromEvent) {
-                        newTransition = { from: transitionFromEvent.type, to: latestType, rawDate: latestEvent.rawDate };
-                    } else if (latestType !== 'GREEN') {
-                        newTransition = { from: 'GREEN', to: latestType, rawDate: latestEvent.rawDate };
-                    }
-                }
-            } else {
-                // National Transition based on global events timeline
-                const gEvents = appState.globalEvents || [];
-                if (gEvents.length > 0) {
-                    const latestEvent = gEvents[0];
-                    // The 'target' state of the banner should match the current 'realType' status
-                    if (realType === 'GREEN') {
-                        // Current state is routine. Last transition should be Active -> Green.
-                        const lastActive = gEvents.find(e => e.type !== 'GREEN');
-                        if (lastActive) {
-                            newTransition = { from: lastActive.type, to: 'GREEN', rawDate: latestEvent.rawDate };
-                        }
-                    } else {
-                        // Current state is Active. Last transition should be Green -> Active.
-                        const lastActive = gEvents.find(e => e.type === realType);
-                        if (lastActive) {
-                            newTransition = { from: 'GREEN', to: realType, rawDate: lastActive.rawDate };
-                        }
-                    }
+            const events = view.filter ? (appState.cityEvents[view.filter] || []) : (appState.globalEvents || []);
+
+            if (events.length > 0) {
+                const latestEvent = events[0];
+                const latestType = latestEvent.type;
+
+                // Find the first event in history that was different from the current top state to show transition
+                const transitionFromEvent = events.find(e => e.type !== latestType);
+
+                if (transitionFromEvent) {
+                    newTransition = {
+                        from: transitionFromEvent.type,
+                        to: latestType,
+                        rawDate: latestEvent.rawDate
+                    };
+                } else if (latestType !== 'GREEN') {
+                    // If all history is the same but active, show transition from Green
+                    newTransition = { from: 'GREEN', to: latestType, rawDate: latestEvent.rawDate };
                 }
             }
 
@@ -438,7 +427,7 @@
             const clearBtn = document.getElementById(`clearBtn-${index}`);
             if (clearBtn) { if (view.filter) clearBtn.classList.add('visible'); else clearBtn.classList.remove('visible'); }
 
-            // Animated Transition Banner Logic
+            // Animated Transition Banner
             const transBanner = document.getElementById(`transitionBanner-${index}`);
             const bannerInner = document.getElementById(`bannerInner-${index}`);
 
@@ -454,8 +443,8 @@
                     }
 
                     transBanner.classList.remove('hidden-banner');
-                    document.getElementById(`fromCircle-${index}`).className = `w-3.5 h-3.5 rounded-full transition-all duration-500 ${stateColors[newTransition.from] || 'bg-gray-400'} dot-glow-${newTransition.from}`;
-                    document.getElementById(`toCircle-${index}`).className = `w-3.5 h-3.5 rounded-full transition-all duration-500 ${stateColors[newTransition.to] || 'bg-gray-400'} dot-glow-${newTransition.to}`;
+                    document.getElementById(`fromCircle-${index}`).className = `w-3.5 h-3.5 rounded-full shadow-sm transition-all duration-500 ${stateColors[newTransition.from] || 'bg-gray-400'} dot-glow-${newTransition.from}`;
+                    document.getElementById(`toCircle-${index}`).className = `w-3.5 h-3.5 rounded-full shadow-sm transition-all duration-500 ${stateColors[newTransition.to] || 'bg-gray-400'} dot-glow-${newTransition.to}`;
                     document.getElementById(`changeTime-${index}`).innerText = formatDisplayDate(newTransition.rawDate);
                 }
             } else if (transBanner) {
@@ -607,10 +596,28 @@
                 const res = await fetchWithTimeout(proxyBaseUrl + encodeURIComponent('https://www.oref.org.il/WarningMessages/alert/alerts.json?v=' + Date.now()));
                 if (!res.ok) return;
                 const text = await res.text(); setServerStatus(true);
-                if (!text || text.trim() === '' || text.trim() === '[]') return;
-                let data = JSON.parse(text);
+
+                if (!text || text.trim() === '' || text.trim() === '[]') {
+                    appState.lastLiveAlertJson = null;
+                    appState.lastLiveAlertStartTime = null;
+                    return;
+                }
+
+                let data;
+                try { data = JSON.parse(text); } catch(e) { return; }
+
                 const type = parseAlertType(data.title, data.cat);
-                updateCityEventData(data.data || [], type, data.title, new Date().toISOString());
+                const cities = data.data || [];
+
+                // Deduplication logic to fix crawling time bug
+                if (text === appState.lastLiveAlertJson && appState.lastLiveAlertStartTime) {
+                    updateCityEventData(cities, type, data.title, appState.lastLiveAlertStartTime);
+                } else {
+                    appState.lastLiveAlertJson = text;
+                    appState.lastLiveAlertStartTime = new Date().toISOString();
+                    updateCityEventData(cities, type, data.title, appState.lastLiveAlertStartTime);
+                }
+
                 refreshUI();
             } catch (e) {}
         }
