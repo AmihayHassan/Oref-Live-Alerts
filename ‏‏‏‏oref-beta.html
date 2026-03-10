@@ -76,14 +76,14 @@
         @keyframes slideUpFade { from { opacity: 0; transform: translateY(1rem); } to { opacity: 1; transform: translateY(0); } }
         .alert-item { animation: slideUpFade 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; opacity: 0; }
         
-        /* Polished Banner Subtle Animation - Zero Jump by fixing base scale to 0.9 */
+        /* Revised Banner Subtle Animation - Zero Jump */
         @keyframes bannerSubtleUpdate {
             0% { transform: scale(0.9); opacity: 1; filter: brightness(1); }
-            50% { transform: scale(0.93); opacity: 0.9; filter: brightness(1.1); }
+            50% { transform: scale(0.94); opacity: 0.85; filter: brightness(1.2); }
             100% { transform: scale(0.9); opacity: 1; filter: brightness(1); }
         }
         .banner-update {
-            animation: bannerSubtleUpdate 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: bannerSubtleUpdate 0.7s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         @keyframes iconPop { 0% { transform: scale(0.95); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
@@ -97,7 +97,7 @@
         @keyframes pulse-soft { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(0.99); } }
         .animate-pulse-soft { animation: pulse-soft 2.5s infinite ease-in-out; }
 
-        /* Enhanced Status Dot Glowing Effects - Use drop-shadow for better "light" effect */
+        /* Status Dot Glowing Effects - Use drop-shadow for better "light" effect */
         .dot-glow-GREEN { filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.9)) !important; }
         .dot-glow-ORANGE { filter: drop-shadow(0 0 8px rgba(251, 146, 60, 0.9)) !important; }
         .dot-glow-RED { filter: drop-shadow(0 0 8px rgba(248, 113, 113, 0.9)) !important; }
@@ -126,44 +126,6 @@
         .dark .clear-btn { background: rgba(255, 255, 255, 0.1); color: #d1d5db; }
         .clear-btn:hover { background: rgba(0, 0, 0, 0.15); color: #111; transform: translateY(-50%) scale(1.1); }
         .dark .clear-btn:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
-
-        /* Isolated Button CSS - REMOVED backdrop-blur to fix the "split/line" bug */
-        .btn-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0 1.25rem;
-            height: 2.75rem;
-            border-radius: 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            transition: all 0.25s ease;
-            background: rgba(30, 30, 30, 0.85); /* Solid semi-opaque background instead of blur */
-        }
-        .dark .btn-header {
-            background: rgba(50, 50, 50, 0.9);
-        }
-        .btn-header:hover {
-            background: rgba(0, 0, 0, 0.95);
-            transform: translateY(-1px);
-        }
-        .dark .btn-header:hover {
-            background: rgba(70, 70, 70, 1);
-        }
-        .btn-header.active {
-            background: rgba(255, 255, 255, 0.95) !important;
-            color: #111 !important;
-            border-color: #fff;
-        }
-        .dark .btn-header.active {
-            background: rgba(255, 255, 255, 0.15) !important;
-            color: #fff !important;
-        }
     </style>
 </head>
 <body id="mainBody" class="dark:text-white text-gray-900">
@@ -188,13 +150,25 @@
     <div class="fixed top-6 left-6 right-6 flex justify-between items-center z-50 pointer-events-none">
         <div class="flex gap-3 pointer-events-auto opacity-0"><div class="w-11 h-11"></div></div>
         <div class="flex gap-3 pointer-events-auto">
-            <button onclick="toggleSplitScreen()" id="splitToggle" class="btn-header">
+            <button onclick="toggleSplitScreen()" id="splitToggle" class="px-5 h-11 flex items-center gap-2 bg-black/40 dark:bg-white/10 hover:bg-black/60 dark:hover:bg-white/30 text-white rounded-xl transition shadow-xl border border-white/20 backdrop-blur-xl text-[0.75rem] font-bold uppercase tracking-widest active:scale-95">
                 <svg xmlns="http://www.w3.org/2000/svg" width="1.1rem" height="1.1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="3" x2="12" y2="21"></line></svg>
                 <span id="splitText">פיצול מסך</span>
             </button>
-            <button onclick="toggleDarkMode()" id="darkToggle" class="btn-header !w-11 !px-0 justify-center !rounded-full">
+            <button onclick="toggleDarkMode()" id="darkToggle" class="w-11 h-11 flex items-center justify-center bg-black/40 dark:bg-white/10 hover:bg-black/60 dark:hover:bg-white/30 text-white rounded-full transition shadow-xl border border-white/20 backdrop-blur-xl active:scale-95">
+                <!-- Moon icon shown when in Light mode to indicate switching to Dark -->
                 <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="1.4rem" height="1.4rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                <svg id="sunIcon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="1.4rem" height="1.4rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="3" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                <!-- Sun icon shown when in Dark mode to indicate switching to Light -->
+                <svg id="sunIcon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="1.4rem" height="1.4rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line> <!-- Fixed right ray coordinate -->
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
             </button>
         </div>
     </div>
@@ -226,9 +200,9 @@
 
         const appState = {
             allCities: [],
-            cityStatus: {}, // Current State { type, title, time, rawDate }
-            cityEvents: {}, // History per city [{ type, time, rawDate }]
-            globalEvents: [], // Global history [{ type, time, rawDate }]
+            cityStatus: {},
+            cityEvents: {},
+            globalEvents: [],
             isSplit: false,
             isInitialLoad: true,
             isFetchingLocations: false,
@@ -279,7 +253,6 @@
             }
         }
 
-        // Just-in-time formatting for UI display only (saves performance)
         function formatDisplayDate(rawDate) {
             if (!rawDate) return "-";
             const normalized = String(rawDate).includes(' ') && !String(rawDate).includes('T')
@@ -306,9 +279,9 @@
                         <div id="viewContainer-${index}" class="status-container flex-shrink-0">
                             <div id="transitionBanner-${index}" class="transition-banner flex flex-col items-center hidden-banner">
                                 <div id="bannerInner-${index}" class="flex items-center gap-4 bg-black/40 dark:bg-white/10 px-5 py-2.5 rounded-full border border-white/20 scale-[0.9]">
-                                    <div id="fromCircle-${index}" class="w-3.5 h-3.5 rounded-full transition-all duration-500"></div>
+                                    <div id="fromCircle-${index}" class="w-3.5 h-3.5 rounded-full shadow-sm transition-all duration-500"></div>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="1.1rem" height="1.1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-white/80"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                                    <div id="toCircle-${index}" class="w-3.5 h-3.5 rounded-full transition-all duration-500"></div>
+                                    <div id="toCircle-${index}" class="w-3.5 h-3.5 rounded-full shadow-sm transition-all duration-500"></div>
                                     <span id="changeTime-${index}" class="mr-3 text-[1.05rem] font-medium text-white leading-none tracking-tight transition-all duration-500"></span>
                                 </div>
                                 <div class="text-[0.85rem] mt-2 text-white uppercase tracking-[0.15em] font-medium opacity-100 drop-shadow-md">שינוי מצב אחרון</div>
@@ -343,19 +316,16 @@
         function toggleSplitScreen() {
             appState.isSplit = !appState.isSplit;
             const wrapper = document.getElementById('mainWrapper'), view0 = document.getElementById('viewHalf-0'), view1 = document.getElementById('viewHalf-1'), text = document.getElementById('splitText');
-            const toggleBtn = document.getElementById('splitToggle');
 
             if (appState.isSplit) {
                 wrapper.classList.replace('single-layout', 'dual-layout'); view1.classList.remove('collapsed');
                 view0.classList.add('border-b-[3px]', 'md:border-b-0', 'md:border-l-[3px]', 'border-black/20', 'dark:border-white/10', 'shadow-[0_10px_20px_rgba(0,0,0,0.15)]', 'z-20');
                 text.innerText = "ביטול פיצול";
-                toggleBtn.classList.add('active');
-                pollHistory(); 
+                pollHistory();
             } else {
                 wrapper.classList.replace('dual-layout', 'single-layout'); view1.classList.add('collapsed');
                 view0.classList.remove('border-b-[3px]', 'md:border-b-0', 'md:border-l-[3px]', 'border-black/20', 'dark:border-white/10', 'shadow-[0_10px_20px_rgba(0,0,0,0.15)]', 'z-20');
                 text.innerText = "פיצול מסך";
-                toggleBtn.classList.remove('active');
             }
             refreshUI();
         }
@@ -404,46 +374,47 @@
 
             let realType = 'GREEN', realCities = [], realTitle = "";
 
-            // Calculate current State
+            // Calculate current Active State
             for (const [cityName, state] of Object.entries(appState.cityStatus)) {
-                if (state.type === 'GREEN') continue; 
+                if (state.type === 'GREEN') continue;
                 if (!view.filter || cityName.includes(view.filter)) {
                     if (state.type === 'RED') { realType = 'RED'; realCities.push(cityName); realTitle = state.title; }
                     else if (state.type === 'ORANGE' && realType !== 'RED') { realType = 'ORANGE'; realCities.push(cityName); realTitle = state.title; }
                 }
             }
 
-            // Calculate stateful transition mapping
+            // Stateful Transition Logic - Improved visibility for National mode
             let newTransition = null;
             if (view.filter) {
                 const events = appState.cityEvents[view.filter] || [];
                 if (events.length > 0) {
-                    const latest = events[0];
-                    if (latest.type === 'GREEN') {
-                        const prevActive = events.find(e => e.type !== 'GREEN');
-                        if (prevActive) {
-                            newTransition = { from: prevActive.type, to: 'GREEN', rawDate: latest.rawDate };
-                        }
-                    } else {
-                        newTransition = { from: 'GREEN', to: latest.type, rawDate: latest.rawDate };
+                    const latestEvent = events[0];
+                    const latestType = latestEvent.type;
+                    const transitionFromEvent = events.find(e => e.type !== latestType);
+                    if (transitionFromEvent) {
+                        newTransition = { from: transitionFromEvent.type, to: latestType, rawDate: latestEvent.rawDate };
+                    } else if (latestType !== 'GREEN') {
+                        newTransition = { from: 'GREEN', to: latestType, rawDate: latestEvent.rawDate };
                     }
                 }
             } else {
-                // Global view transition
+                // National Transition based on global events timeline
                 const gEvents = appState.globalEvents || [];
                 if (gEvents.length > 0) {
-                    const latest = gEvents[0];
-                    if (latest.type === 'GREEN') {
-                        if (realType === 'GREEN') {
-                            const prevActive = gEvents.find(e => e.type !== 'GREEN');
-                            if (prevActive) {
-                                newTransition = { from: prevActive.type, to: 'GREEN', rawDate: latest.rawDate };
-                            }
-                        } else {
-                            newTransition = { from: 'GREEN', to: realType, rawDate: latest.rawDate };
+                    const latestEvent = gEvents[0];
+                    // The 'target' state of the banner should match the current 'realType' status
+                    if (realType === 'GREEN') {
+                        // Current state is routine. Last transition should be Active -> Green.
+                        const lastActive = gEvents.find(e => e.type !== 'GREEN');
+                        if (lastActive) {
+                            newTransition = { from: lastActive.type, to: 'GREEN', rawDate: latestEvent.rawDate };
                         }
                     } else {
-                        newTransition = { from: 'GREEN', to: latest.type, rawDate: latest.rawDate };
+                        // Current state is Active. Last transition should be Green -> Active.
+                        const lastActive = gEvents.find(e => e.type === realType);
+                        if (lastActive) {
+                            newTransition = { from: 'GREEN', to: realType, rawDate: lastActive.rawDate };
+                        }
                     }
                 }
             }
@@ -452,12 +423,12 @@
             view.lastTransition = newTransition;
 
             let displayType = view.simulation ? view.simulation.type : realType, displayCities = view.simulation ? view.simulation.cities : realCities, displayTitle = view.simulation ? view.simulation.title : realTitle;
-            view._currentDisplayType = displayType; 
+            view._currentDisplayType = displayType;
 
             const isDark = document.documentElement.classList.contains('dark'), half = document.getElementById(`viewHalf-${index}`);
             if (half) {
                 const targetBg = getBgClass(displayType, isDark);
-                half.classList.remove('bg-red-950', 'bg-red-600', 'bg-orange-950', 'bg-orange-500', 'bg-green-950', 'bg-green-500'); 
+                half.classList.remove('bg-red-950', 'bg-red-600', 'bg-orange-950', 'bg-orange-500', 'bg-green-950', 'bg-green-500');
                 half.classList.add(...targetBg.split(' '));
             }
 
@@ -467,15 +438,17 @@
             const clearBtn = document.getElementById(`clearBtn-${index}`);
             if (clearBtn) { if (view.filter) clearBtn.classList.add('visible'); else clearBtn.classList.remove('visible'); }
 
-            // Apply Animated Banner Transitions
+            // Animated Transition Banner Logic
             const transBanner = document.getElementById(`transitionBanner-${index}`);
             const bannerInner = document.getElementById(`bannerInner-${index}`);
+
+            // Critical Visibility Fix: Ensure banner is shown if newTransition exists and is logically sound
             if (newTransition && newTransition.from !== newTransition.to) {
                 if (transBanner) {
                     const currentString = JSON.stringify(newTransition);
                     if (appState.views[index]._renderedTransition !== currentString) {
                         bannerInner.classList.remove('banner-update');
-                        void bannerInner.offsetWidth; // Force Reflow
+                        void bannerInner.offsetWidth;
                         bannerInner.classList.add('banner-update');
                         appState.views[index]._renderedTransition = currentString;
                     }
@@ -483,8 +456,6 @@
                     transBanner.classList.remove('hidden-banner');
                     document.getElementById(`fromCircle-${index}`).className = `w-3.5 h-3.5 rounded-full transition-all duration-500 ${stateColors[newTransition.from] || 'bg-gray-400'} dot-glow-${newTransition.from}`;
                     document.getElementById(`toCircle-${index}`).className = `w-3.5 h-3.5 rounded-full transition-all duration-500 ${stateColors[newTransition.to] || 'bg-gray-400'} dot-glow-${newTransition.to}`;
-                    
-                    // Formatting happens strictly HERE for display only
                     document.getElementById(`changeTime-${index}`).innerText = formatDisplayDate(newTransition.rawDate);
                 }
             } else if (transBanner) {
@@ -566,22 +537,18 @@
             return "RED";
         }
 
-        function updateCityEventData(cities, type, rawDate) {
-            const normalized = String(rawDate).includes(' ') && !String(rawDate).includes('T') 
-                               ? String(rawDate).replace(' ', 'T') 
+        function updateCityEventData(cities, type, title, rawDate) {
+            const normalized = String(rawDate).includes(' ') && !String(rawDate).includes('T')
+                               ? String(rawDate).replace(' ', 'T')
                                : rawDate;
             const timeMs = new Date(normalized).getTime();
             if (isNaN(timeMs)) return;
 
             cities.forEach(city => {
                 if (!city) return;
-                
-                // Track current active state
                 if (!appState.cityStatus[city] || timeMs >= appState.cityStatus[city].time) {
-                    appState.cityStatus[city] = { type, time: timeMs, rawDate };
+                    appState.cityStatus[city] = { type, title, time: timeMs, rawDate };
                 }
-                
-                // Track historical events for the city
                 if (!appState.cityEvents[city]) appState.cityEvents[city] = [];
                 if (!appState.cityEvents[city].some(e => e.time === timeMs)) {
                     appState.cityEvents[city].push({ type, time: timeMs, rawDate });
@@ -590,7 +557,6 @@
                 }
             });
 
-            // Track global historical events 
             if (!appState.globalEvents.some(e => e.time === timeMs && e.type === type)) {
                 appState.globalEvents.push({ type, time: timeMs, rawDate });
                 appState.globalEvents.sort((a, b) => b.time - a.time);
@@ -605,22 +571,20 @@
                 const res = await fetchWithTimeout(proxyBaseUrl + encodeURIComponent(url), { timeout: 10000 });
                 if (!res.ok) return;
                 const data = await res.json();
-                
                 const reversed = [...data].reverse();
-                // Process in chunks to prevent freezing the UI
                 const CHUNK_SIZE = 150;
                 for (let i = 0; i < reversed.length; i += CHUNK_SIZE) {
                     const chunk = reversed.slice(i, i + CHUNK_SIZE);
                     chunk.forEach(item => {
                         const cities = String(item.data || item.city || "").split(',').map(s => s.trim());
                         const type = parseAlertType(item.title, item.category || item.cat);
-                        updateCityEventData(cities, type, item.alertDate || item.date || item.datetime);
+                        updateCityEventData(cities, type, item.title, item.alertDate || item.date || item.datetime);
                     });
-                    await new Promise(r => setTimeout(r, 0)); // Yield to main thread
+                    await new Promise(r => setTimeout(r, 0));
                 }
                 appState.isFullHistoryLoaded = true;
                 refreshUI();
-            } catch (e) { console.warn("Failed to load extended history"); }
+            } catch (e) {}
         }
 
         async function pollHistory() {
@@ -628,13 +592,11 @@
                 const res = await fetchWithTimeout(proxyBaseUrl + encodeURIComponent('https://www.oref.org.il/warningMessages/alert/History/AlertsHistory.json?v=' + Date.now()));
                 if (!res.ok) return;
                 const data = await res.json(); setServerStatus(true);
-                
                 data.forEach(item => {
                     const cities = Array.isArray(item.data) ? item.data : String(item.data).split(',').map(s => s.trim());
                     const type = parseAlertType(item.title, item.category || item.cat);
-                    updateCityEventData(cities, type, item.alertDate || item.date);
+                    updateCityEventData(cities, type, item.title, item.alertDate || item.date);
                 });
-                
                 appState.isInitialLoad = false;
                 refreshUI();
             } catch (e) {}
@@ -645,12 +607,10 @@
                 const res = await fetchWithTimeout(proxyBaseUrl + encodeURIComponent('https://www.oref.org.il/WarningMessages/alert/alerts.json?v=' + Date.now()));
                 if (!res.ok) return;
                 const text = await res.text(); setServerStatus(true);
-                
                 if (!text || text.trim() === '' || text.trim() === '[]') return;
                 let data = JSON.parse(text);
                 const type = parseAlertType(data.title, data.cat);
-                
-                updateCityEventData(data.data || [], type, new Date().toISOString());
+                updateCityEventData(data.data || [], type, data.title, new Date().toISOString());
                 refreshUI();
             } catch (e) {}
         }
@@ -678,17 +638,13 @@
             const now = new Date();
             const timeStr = now.toLocaleTimeString('he-IL', { hour12: false }).replace(/:/g, '');
             if (timeStr === lastClockStr) return;
-            
             const ids = ['h1', 'h2', 'm1', 'm2', 's1', 's2'];
             const digits = timeStr.split('');
             if (digits.length === 6) {
                 digits.forEach((digit, i) => {
                     const el = document.getElementById(ids[i]);
                     if (el && el.innerText !== digit) {
-                        el.innerText = digit; 
-                        el.classList.remove('digit-change'); 
-                        void el.offsetWidth; 
-                        el.classList.add('digit-change');
+                        el.innerText = digit; el.classList.remove('digit-change'); void el.offsetWidth; el.classList.add('digit-change');
                     }
                 });
             }
