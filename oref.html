@@ -53,7 +53,7 @@
             margin-bottom: 8rem; border: 0.1rem solid rgba(255, 255, 255, 0.2);
             background: rgba(255, 255, 255, 0.12); z-index: 10;
             overflow: visible;
-            transition: background-color 0.8s ease, border-color 0.8s ease, max-height 0.6s ease, margin 0.6s ease;
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         @media (max-aspect-ratio: 1/1), (max-width: 768px) {
@@ -66,13 +66,14 @@
         .flex-fixed { flex-shrink: 0 !important; }
 
         .national-badge, .transition-banner {
-            transition: opacity 0.5s ease, transform 0.5s ease, max-height 0.5s ease, margin 0.5s ease, padding 0.5s ease;
-            opacity: 1; transform: translateY(0); max-height: 80px; overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            opacity: 1; transform: translateY(0); max-height: 100px; overflow: hidden;
             flex-shrink: 0;
         }
         .hidden-badge, .hidden-banner {
-            opacity: 0; transform: translateY(-10px); max-height: 0;
-            margin: 0 !important; padding: 0 !important; pointer-events: none;
+            opacity: 0; transform: translateY(-15px); max-height: 0;
+            margin-top: 0 !important; margin-bottom: 0 !important; padding-top: 0 !important; padding-bottom: 0 !important;
+            pointer-events: none;
         }
 
         .clock-digit { display: inline-block; width: 0.7em; text-align: center; transition: opacity 0.3s ease; }
@@ -82,12 +83,13 @@
 
         .alert-list-container {
             max-height: 0; opacity: 0; overflow-y: auto; flex: 1 1 auto; min-height: 0;
-            transition: max-height 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
+            transition: max-height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease, margin 0.5s ease;
             margin-top: 0;
             mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
             -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
         }
-        .alert-list-container.show { max-height: 100%; opacity: 1; margin-top: 0.5rem; }
+        /* Using a fixed high value for max-height to ensure smooth transition */
+        .alert-list-container.show { max-height: 45vh; opacity: 1; margin-top: 0.75rem; }
 
         @keyframes slideUpFade { from { opacity: 0; transform: translateY(1rem); } to { opacity: 1; transform: translateY(0); } }
         .alert-item { animation: slideUpFade 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; opacity: 0; }
@@ -99,8 +101,8 @@
         }
         .banner-update { animation: bannerSubtleUpdate 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        @keyframes iconPop { 0% { transform: scale(0.95); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
-        .icon-pop { animation: iconPop 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        @keyframes iconPop { 0% { transform: scale(0.85); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
+        .icon-pop { animation: iconPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 
         .custom-scroll::-webkit-scrollbar { width: 0.35rem; }
         .custom-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
@@ -120,7 +122,7 @@
             position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
             width: 2.25rem; height: 2.25rem; display: flex; align-items: center; justify-content: center;
             border-radius: 50%; background: rgba(0, 0, 0, 0.08); color: #4b5563;
-            cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 0; pointer-events: none; z-index: 20;
         }
         .clear-btn.visible { opacity: 1; pointer-events: auto; }
@@ -190,9 +192,9 @@
                 <span id="splitText">פיצול מסך</span>
             </button>
             <button onclick="toggleDarkMode()" id="darkToggle" class="btn-header !w-11 !px-0 justify-center !rounded-full">
-                <!-- Indicating target state: Moon when currently light -->
+                <!-- Moon icon shown when in Light mode -->
                 <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="1.4rem" height="1.4rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                <!-- Indicating target state: Sun when currently dark -->
+                <!-- Sun icon shown when in Dark mode -->
                 <svg id="sunIcon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="1.4rem" height="1.4rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="5"></circle>
                     <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -200,7 +202,7 @@
                     <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
                     <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
                     <line x1="1" y1="12" x2="3" y2="12"></line>
-                    <line x1="21" y1="12" x2="23" y2="12"></line> <!-- Fixed coordinates -->
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
                     <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
                     <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                 </svg>
@@ -208,7 +210,7 @@
         </div>
     </div>
 
-    <!-- Main Dynamic Layout -->
+    <!-- Wrapper for Views -->
     <div id="mainWrapper" class="single-layout"></div>
 
     <!-- Global Footer Stats -->
@@ -224,7 +226,7 @@
     </div>
 
     <script>
-        // --- Persistence Management ---
+        // --- Settings Management ---
         let proxyHost = localStorage.getItem('oref_proxy_host') || "localhost:8080";
         const getProxyBaseUrl = () => `http://${proxyHost}/?url=`;
 
@@ -257,7 +259,8 @@
             proxyHost = host;
             localStorage.setItem('oref_proxy_host', host);
             toggleSettingsModal();
-            // Fresh update using new host
+            // Reset state to force fresh loads with new proxy
+            appState.isFullHistoryLoaded = false;
             pollHistory();
             checkAlerts();
             fetchFullHistory();
@@ -320,9 +323,9 @@
                         <div id="viewContainer-${index}" class="status-container flex-shrink-0">
                             <div id="transitionBanner-${index}" class="transition-banner flex flex-col items-center hidden-banner flex-fixed">
                                 <div id="bannerInner-${index}" class="flex items-center gap-4 bg-black/40 dark:bg-white/10 px-5 py-2.5 rounded-full border border-white/20 scale-[0.9]">
-                                    <div id="fromCircle-${index}" class="w-3.5 h-3.5 rounded-full shadow-sm transition-all duration-500"></div>
+                                    <div id="fromCircle-${index}" class="w-3.5 h-3.5 rounded-full transition-all duration-500"></div>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="1.1rem" height="1.1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-white/80"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                                    <div id="toCircle-${index}" class="w-3.5 h-3.5 rounded-full shadow-sm transition-all duration-500"></div>
+                                    <div id="toCircle-${index}" class="w-3.5 h-3.5 rounded-full transition-all duration-500"></div>
                                     <span id="changeTime-${index}" class="mr-3 text-[1.05rem] font-medium text-white leading-none tracking-tight transition-all duration-500"></span>
                                 </div>
                                 <div class="text-[0.85rem] mt-2 text-white uppercase tracking-[0.15em] font-medium opacity-100 drop-shadow-md">שינוי מצב אחרון</div>
@@ -463,7 +466,7 @@
                     }
                     transBanner.classList.remove('hidden-banner');
                     document.getElementById(`fromCircle-${index}`).className = `w-3.5 h-3.5 rounded-full transition-all duration-500 ${stateColors[newTransition.from] || 'bg-gray-400'} dot-glow-${newTransition.from}`;
-                    document.getElementById(`toCircle-${index}`).className = `w-3.5 h-3.5 rounded-full shadow-sm transition-all duration-500 ${stateColors[newTransition.to] || 'bg-gray-400'} dot-glow-${newTransition.to}`;
+                    document.getElementById(`toCircle-${index}`).className = `w-3.5 h-3.5 rounded-full transition-all duration-500 ${stateColors[newTransition.to] || 'bg-gray-400'} dot-glow-${newTransition.to}`;
                     document.getElementById(`changeTime-${index}`).innerText = formatDisplayDate(newTransition.rawDate);
                 }
             } else if (transBanner) { transBanner.classList.add('hidden-banner'); appState.views[index]._renderedTransition = null; }
