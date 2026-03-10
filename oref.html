@@ -88,7 +88,6 @@
             mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
             -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
         }
-        /* Using a fixed high value for max-height to ensure smooth transition */
         .alert-list-container.show { max-height: 45vh; opacity: 1; margin-top: 0.75rem; }
 
         @keyframes slideUpFade { from { opacity: 0; transform: translateY(1rem); } to { opacity: 1; transform: translateY(0); } }
@@ -122,7 +121,7 @@
             position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
             width: 2.25rem; height: 2.25rem; display: flex; align-items: center; justify-content: center;
             border-radius: 50%; background: rgba(0, 0, 0, 0.08); color: #4b5563;
-            cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 0; pointer-events: none; z-index: 20;
         }
         .clear-btn.visible { opacity: 1; pointer-events: auto; }
@@ -259,11 +258,8 @@
             proxyHost = host;
             localStorage.setItem('oref_proxy_host', host);
             toggleSettingsModal();
-            // Reset state to force fresh loads with new proxy
             appState.isFullHistoryLoaded = false;
-            pollHistory();
-            checkAlerts();
-            fetchFullHistory();
+            pollHistory(); checkAlerts(); fetchFullHistory();
         }
 
         function toggleSettingsModal() {
@@ -334,13 +330,13 @@
                             <div id="statusIcon-${index}" class="flex justify-center text-white transition-transform duration-500 flex-fixed"></div>
                             <h1 id="statusTitle-${index}" class="font-bold text-white text-5xl tracking-tight leading-none flex-fixed"></h1>
                             <p id="statusDesc-${index}" class="text-white text-2xl font-medium opacity-90 flex-fixed shrink-0"></p>
-                            <div class="mt-1 relative w-full flex-fixed">
+                            <div class="mt-1 relative w-full flex-fixed" style="z-index: 50;">
                                 <input id="cityInput-${index}" type="text" oninput="handleInput(${index}, this.value)" onfocus="handleInput(${index}, this.value)" autocomplete="off" placeholder="הזן עיר או אזור"
                                        class="w-full p-4 pl-12 rounded-2xl text-gray-900 font-bold text-center bg-white/90 dark:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-blue-500/40 placeholder-gray-500 shadow-xl text-base transition-all duration-300 focus:scale-[1.02]">
                                 <button id="clearBtn-${index}" onclick="selectCity(${index}, '')" class="clear-btn" title="נקה חיפוש">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="1.2rem" height="1.2rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                 </button>
-                                <ul id="autocompleteList-${index}" class="absolute z-50 w-full bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-h-60 overflow-y-auto hidden flex-col mt-2 text-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 custom-scroll top-full left-0"></ul>
+                                <ul id="autocompleteList-${index}" class="absolute z-[60] w-full bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-h-60 overflow-y-auto hidden flex-col mt-2 text-gray-800 dark:text-white border border-gray-200 dark:border-gray-700 custom-scroll top-full left-0"></ul>
                             </div>
                             <div id="alertList-${index}" class="alert-list-container w-full text-white text-right space-y-3 custom-scroll pr-4 mt-2"></div>
                             <div class="mt-auto pt-4 flex flex-col gap-4 w-full flex-fixed">
@@ -393,10 +389,20 @@
 
         function reconcileAlertList(container, displayCities) {
             const uniqueCities = [...new Set(displayCities)].sort((a, b) => a.localeCompare(b, 'he')), currentCitiesInDom = new Set();
+
+            // If the list is becoming empty, just hide it smoothly without instantly clearing children to avoid jump
+            if (uniqueCities.length === 0) {
+                container.classList.remove('show');
+                setTimeout(() => { if (!container.classList.contains('show')) container.innerHTML = ''; }, 850);
+                return;
+            }
+
+            container.classList.add('show');
             Array.from(container.children).forEach(child => {
                 const city = child.getAttribute('data-city');
                 if (!uniqueCities.includes(city)) child.remove(); else currentCitiesInDom.add(city);
             });
+
             uniqueCities.forEach((city, index) => {
                 if (!currentCitiesInDom.has(city)) {
                     const div = document.createElement('div');
@@ -406,8 +412,6 @@
                     if (nextEl) container.insertBefore(div, nextEl); else container.appendChild(div);
                 }
             });
-            if (displayCities.length > 0) container.classList.add('show');
-            else { container.classList.remove('show'); setTimeout(() => { if (!container.classList.contains('show')) container.innerHTML = ''; }, 700); }
         }
 
         function updateViewDOM(index) {
@@ -466,7 +470,7 @@
                     }
                     transBanner.classList.remove('hidden-banner');
                     document.getElementById(`fromCircle-${index}`).className = `w-3.5 h-3.5 rounded-full transition-all duration-500 ${stateColors[newTransition.from] || 'bg-gray-400'} dot-glow-${newTransition.from}`;
-                    document.getElementById(`toCircle-${index}`).className = `w-3.5 h-3.5 rounded-full transition-all duration-500 ${stateColors[newTransition.to] || 'bg-gray-400'} dot-glow-${newTransition.to}`;
+                    document.getElementById(`toCircle-${index}`).className = `w-3.5 h-3.5 rounded-full shadow-sm transition-all duration-500 ${stateColors[newTransition.to] || 'bg-gray-400'} dot-glow-${newTransition.to}`;
                     document.getElementById(`changeTime-${index}`).innerText = formatDisplayDate(newTransition.rawDate);
                 }
             } else if (transBanner) { transBanner.classList.add('hidden-banner'); appState.views[index]._renderedTransition = null; }
@@ -488,7 +492,7 @@
         }
 
         function setSim(index, type) {
-            const cities = []; if (type) for (let i = 1; i <= 25; i++) cities.push(`יישוב סימולציה ${i}`);
+            const cities = []; if (type) for (let i = 1; i <= 35; i++) cities.push(`יישוב סימולציה ${i}`);
             appState.views[index].simulation = type === null ? null : { type, cities, title: type === 'RED' ? 'ירי רקטות וטילים (סימולציה)' : 'צפויות הנחיות מקדימות (סימולציה)' };
             refreshUI();
         }
@@ -626,7 +630,6 @@
         }
 
         window.onload = () => {
-            // Set initial proxy host to input
             document.getElementById('proxyInput').value = proxyHost;
             initializeViews(); refreshUI(); fetchLocations(); pollHistory(); checkAlerts();
             setInterval(checkAlerts, 1000); setInterval(pollHistory, 5000); setInterval(updateClock, 100); setInterval(monitorConnection, 500);
