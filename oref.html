@@ -49,9 +49,10 @@
             text-align: center; backdrop-filter: blur(14px); padding: 2.25rem 2rem; border-radius: 2.5rem;
             box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.25); width: 100%; max-width: min(35rem, 90vw);
             position: relative; display: flex; flex-direction: column; gap: 1.25rem;
-            max-height: 85vh; /* Keep container within viewport */
+            max-height: 85vh;
             margin-bottom: 8rem; border: 0.1rem solid rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.12); z-index: 10; overflow: hidden; /* Changed to hidden to control internal scroll */
+            background: rgba(255, 255, 255, 0.12); z-index: 10;
+            overflow: visible; /* Fixed: allows absolute positioned dropdown to pop out */
             transition: background-color 0.8s ease, border-color 0.8s ease, max-height 0.6s ease, margin 0.6s ease;
         }
 
@@ -62,7 +63,6 @@
 
         .dark .status-container { background: rgba(0, 0, 0, 0.35); border-color: rgba(255, 255, 255, 0.08); }
 
-        /* Header elements should NEVER shrink */
         .flex-fixed { flex-shrink: 0 !important; }
 
         .national-badge, .transition-banner {
@@ -80,12 +80,10 @@
         .digit-change { animation: digitFade 0.35s ease-out; }
         @keyframes digitFade { 0% { opacity: 0.4; } 100% { opacity: 1; } }
 
-        /* The list is the ONLY element allowed to grow and scroll */
         .alert-list-container {
             max-height: 0; opacity: 0; overflow-y: auto; flex: 1 1 auto; min-height: 0;
             transition: max-height 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease;
             margin-top: 0;
-            /* Scroll fade mask */
             mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
             -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
         }
@@ -114,9 +112,10 @@
         @keyframes pulse-soft { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(0.99); } }
         .animate-pulse-soft { animation: pulse-soft 2.5s infinite ease-in-out; }
 
-        .dot-glow-GREEN { filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.9)) !important; }
-        .dot-glow-ORANGE { filter: drop-shadow(0 0 8px rgba(251, 146, 60, 0.9)) !important; }
-        .dot-glow-RED { filter: drop-shadow(0 0 8px rgba(248, 113, 113, 0.9)) !important; }
+        /* Strong Glowing Effects */
+        .dot-glow-GREEN { filter: drop-shadow(0 0 10px rgba(74, 222, 128, 0.95)) !important; }
+        .dot-glow-ORANGE { filter: drop-shadow(0 0 10px rgba(251, 146, 60, 0.95)) !important; }
+        .dot-glow-RED { filter: drop-shadow(0 0 10px rgba(248, 113, 113, 0.95)) !important; }
 
         .clear-btn {
             position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
@@ -130,14 +129,15 @@
         .clear-btn:hover { background: rgba(0, 0, 0, 0.15); color: #111; transform: translateY(-50%) scale(1.1); }
         .dark .clear-btn:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
 
+        /* Fixed Button Styles - Clean implementation to prevent background artifacts */
         .btn-header {
             display: flex; align-items: center; gap: 0.5rem; padding: 0 1.25rem;
             height: 2.75rem; border-radius: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2);
             color: white; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
             font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
-            transition: all 0.25s ease; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(16px);
+            transition: all 0.25s ease; background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(16px);
         }
-        .dark .btn-header { background: rgba(255, 255, 255, 0.1); }
+        .dark .btn-header { background: rgba(255, 255, 255, 0.12); }
         .btn-header:hover { background: rgba(0, 0, 0, 0.6); transform: translateY(-1px); }
         .dark .btn-header:hover { background: rgba(255, 255, 255, 0.2); }
     </style>
@@ -159,6 +159,7 @@
         </div>
     </div>
 
+    <!-- Header Controls -->
     <div class="fixed top-6 left-6 right-6 flex justify-between items-center z-50 pointer-events-none">
         <div class="flex gap-3 pointer-events-auto opacity-0"><div class="w-11 h-11"></div></div>
         <div class="flex gap-3 pointer-events-auto">
@@ -167,19 +168,28 @@
                 <span id="splitText">פיצול מסך</span>
             </button>
             <button onclick="toggleDarkMode()" id="darkToggle" class="btn-header !w-11 !px-0 justify-center !rounded-full">
+                <!-- Moon icon shown when in Light mode to indicate switching to Dark -->
                 <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="1.4rem" height="1.4rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                <!-- Sun icon shown when in Dark mode to indicate switching to Light -->
                 <svg id="sunIcon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="1.4rem" height="1.4rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line>
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                    <line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line>
-                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line> <!-- Fixed right ray coordinate x2=23 -->
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                 </svg>
             </button>
         </div>
     </div>
 
+    <!-- Wrapper for Views -->
     <div id="mainWrapper" class="single-layout"></div>
 
+    <!-- Global Footer Stats -->
     <div class="fixed bottom-6 left-0 right-0 flex justify-center pointer-events-none z-40">
         <div class="clock-bubble bg-black/85 backdrop-blur-3xl border border-white/10 px-14 py-6 rounded-[3rem] text-center shadow-[0_1rem_3rem_rgba(0,0,0,0.5)] min-w-[24rem] pointer-events-auto transition-all duration-500">
             <p class="text-white/60 text-[0.85rem] uppercase tracking-[0.4em] font-bold mb-2 text-center">שעת עדכון אחרון</p>
@@ -269,7 +279,7 @@
                                 <div id="bannerInner-${index}" class="flex items-center gap-4 bg-black/40 dark:bg-white/10 px-5 py-2.5 rounded-full border border-white/20 scale-[0.9]">
                                     <div id="fromCircle-${index}" class="w-3.5 h-3.5 rounded-full transition-all duration-500"></div>
                                     <svg xmlns="http://www.w3.org/2000/svg" width="1.1rem" height="1.1rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-white/80"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                                    <div id="toCircle-${index}" class="w-3.5 h-3.5 rounded-full transition-all duration-500"></div>
+                                    <div id="toCircle-${index}" class="w-3.5 h-3.5 rounded-full shadow-sm transition-all duration-500"></div>
                                     <span id="changeTime-${index}" class="mr-3 text-[1.05rem] font-medium text-white leading-none tracking-tight transition-all duration-500"></span>
                                 </div>
                                 <div class="text-[0.85rem] mt-2 text-white uppercase tracking-[0.15em] font-medium opacity-100 drop-shadow-md">שינוי מצב אחרון</div>
@@ -375,7 +385,6 @@
                 if (transitionFromEvent) newTransition = { from: transitionFromEvent.type, to: latestType, rawDate: latestEvent.rawDate };
                 else if (latestType !== 'GREEN') newTransition = { from: 'GREEN', to: latestType, rawDate: latestEvent.rawDate };
                 else if (latestType === 'GREEN') {
-                    // Fix: Handle closure properly even if it's the only thing in recent history
                     const prevActive = events.find(e => e.type !== 'GREEN');
                     if (prevActive) newTransition = { from: prevActive.type, to: 'GREEN', rawDate: latestEvent.rawDate };
                 }
@@ -411,7 +420,7 @@
                     }
                     transBanner.classList.remove('hidden-banner');
                     document.getElementById(`fromCircle-${index}`).className = `w-3.5 h-3.5 rounded-full transition-all duration-500 ${stateColors[newTransition.from] || 'bg-gray-400'} dot-glow-${newTransition.from}`;
-                    document.getElementById(`toCircle-${index}`).className = `w-3.5 h-3.5 rounded-full transition-all duration-500 ${stateColors[newTransition.to] || 'bg-gray-400'} dot-glow-${newTransition.to}`;
+                    document.getElementById(`toCircle-${index}`).className = `w-3.5 h-3.5 rounded-full shadow-sm transition-all duration-500 ${stateColors[newTransition.to] || 'bg-gray-400'} dot-glow-${newTransition.to}`;
                     document.getElementById(`changeTime-${index}`).innerText = formatDisplayDate(newTransition.rawDate);
                 }
             } else if (transBanner) { transBanner.classList.add('hidden-banner'); appState.views[index]._renderedTransition = null; }
