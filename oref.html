@@ -107,7 +107,9 @@
         .custom-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 1rem; }
 
-        #offlineModal, #settingsModal { transition: opacity 0.4s ease, visibility 0.4s ease; z-index: 100; }
+        #offlineModal { transition: opacity 0.4s ease, visibility 0.4s ease; z-index: 100; }
+        #settingsModal { transition: opacity 0.4s ease, visibility 0.4s ease; z-index: 110; } /* Always above offline */
+
         .modal-visible { opacity: 1; visibility: visible; }
         .modal-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         @keyframes pulse-soft { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(0.99); } }
@@ -129,7 +131,6 @@
         .clear-btn:hover { background: rgba(0, 0, 0, 0.15); color: #111; transform: translateY(-50%) scale(1.1); }
         .dark .clear-btn:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
 
-        /* Fixed Button Styles - Clean implementation to prevent background artifacts */
         .btn-header {
             display: flex; align-items: center; gap: 0.5rem; padding: 0 1.25rem;
             height: 2.75rem; border-radius: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.2);
@@ -147,7 +148,7 @@
     <div style="display: none;" class="bg-green-400 bg-orange-400 bg-red-500 bg-red-600/90 bg-orange-500/90 bg-green-700/80 border-red-400/50 border-orange-400/50 border-green-400/50 bg-red-950 bg-red-600 bg-orange-950 bg-orange-500 bg-green-950 bg-green-500 text-white"></div>
 
     <!-- Settings Modal -->
-    <div id="settingsModal" class="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-2xl modal-hidden z-[100]">
+    <div id="settingsModal" class="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-2xl modal-hidden">
         <div class="bg-black/80 border border-white/10 p-10 md:p-12 rounded-[3.5rem] text-center shadow-[0_2rem_5rem_rgba(0,0,0,0.6)] w-full max-w-lg">
             <h2 class="text-white text-3xl font-bold mb-8 tracking-tight">הגדרות שרת</h2>
             <div class="text-right mb-6">
@@ -173,7 +174,13 @@
                 </svg>
             </div>
             <h2 class="text-white text-3xl font-bold mb-3 tracking-tight">השרת אינו זמין</h2>
-            <p class="text-white/70 text-lg font-medium leading-relaxed">מנסה להתחבר מחדש לנתוני פיקוד העורף...<br>אנא וודא חיבור תקין לאינטרנט ושהשרת רץ ברקע.</p>
+            <p class="text-white/70 text-lg font-medium leading-relaxed mb-8">
+                מנסה להתחבר מחדש לנתוני פיקוד העורף...<br>אנא וודא חיבור תקין לאינטרנט ושהשרת רץ ברקע.
+            </p>
+            <!-- New: Settings button in offline modal -->
+            <button onclick="toggleSettingsModal()" class="py-3 px-8 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl border border-white/10 transition-all active:scale-95">
+                שנה הגדרות שרת
+            </button>
         </div>
     </div>
 
@@ -259,8 +266,9 @@
             proxyHost = host;
             localStorage.setItem('oref_proxy_host', host);
             toggleSettingsModal();
+            // Reset state to force fresh loads with new proxy
             appState.isFullHistoryLoaded = false;
-            pollHistory(); checkAlerts(); fetchFullHistory();
+            pollHistory(); checkAlerts(); fetchLocations();
         }
 
         function toggleSettingsModal() {
@@ -391,7 +399,6 @@
         function reconcileAlertList(container, displayCities) {
             const uniqueCities = [...new Set(displayCities)].sort((a, b) => a.localeCompare(b, 'he')), currentCitiesInDom = new Set();
 
-            // If the list is becoming empty, just hide it smoothly without instantly clearing children to avoid jump
             if (uniqueCities.length === 0) {
                 container.classList.remove('show');
                 setTimeout(() => { if (!container.classList.contains('show')) container.innerHTML = ''; }, 850);
@@ -471,7 +478,7 @@
                     }
                     transBanner.classList.remove('hidden-banner');
                     document.getElementById(`fromCircle-${index}`).className = `w-3.5 h-3.5 rounded-full transition-all duration-500 ${stateColors[newTransition.from] || 'bg-gray-400'} dot-glow-${newTransition.from}`;
-                    document.getElementById(`toCircle-${index}`).className = `w-3.5 h-3.5 rounded-full shadow-sm transition-all duration-500 ${stateColors[newTransition.to] || 'bg-gray-400'} dot-glow-${newTransition.to}`;
+                    document.getElementById(`toCircle-${index}`).className = `w-3.5 h-3.5 rounded-full transition-all duration-500 ${stateColors[newTransition.to] || 'bg-gray-400'} dot-glow-${newTransition.to}`;
                     document.getElementById(`changeTime-${index}`).innerText = formatDisplayDate(newTransition.rawDate);
                 }
             } else if (transBanner) { transBanner.classList.add('hidden-banner'); appState.views[index]._renderedTransition = null; }
