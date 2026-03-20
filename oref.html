@@ -108,7 +108,7 @@
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 1rem; }
 
         #offlineModal, #settingsModal { transition: opacity 0.4s ease, visibility 0.4s ease; z-index: 100; }
-        #settingsModal { transition: opacity 0.4s ease, visibility 0.4s ease; z-index: 110; } /* Always above offline */
+        #settingsModal { transition: opacity 0.4s ease, visibility 0.4s ease; z-index: 110; }
         .modal-visible { opacity: 1; visibility: visible; }
         .modal-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         @keyframes pulse-soft { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(0.99); } }
@@ -233,6 +233,8 @@
             hour12: false
         });
 
+        const AUTO_CLOSE_MS = 3 * 60 * 60 * 1000; // 3 hours timeout
+
         const appState = {
             allCities: [], cityStatus: {}, cityEvents: {}, globalEvents: [],
             isSplit: false, isInitialLoad: true, isFetchingLocations: false, isFullHistoryLoaded: false,
@@ -294,16 +296,13 @@
             }
         }
 
-        // Improved date parser for Oref formats like "07.10.2023 06:30:00"
         function parseOrefDate(rawDate) {
             if (!rawDate) return new Date();
             let dateStr = String(rawDate).trim();
-            // Handle DD.MM.YYYY format
             if (dateStr.includes('.') && dateStr.indexOf('.') < 4) {
                 const parts = dateStr.split(' ');
                 const dateParts = parts[0].split('.');
                 if (dateParts.length === 3) {
-                    // Convert DD.MM.YYYY to YYYY-MM-DD
                     dateStr = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}${parts[1] ? 'T' + parts[1] : ''}`;
                 }
             } else if (dateStr.includes(' ') && !dateStr.includes('T')) {
@@ -556,7 +555,10 @@
             const timeMs = d.getTime(); if (isNaN(timeMs)) return;
             cities.forEach(city => {
                 if (!city) return;
-                if (!appState.cityStatus[city] || timeMs >= appState.cityStatus[city].time) appState.cityStatus[city] = { type, title, time: timeMs, rawDate };
+                // Only update if the new event is newer than the stored one
+                if (!appState.cityStatus[city] || timeMs >= appState.cityStatus[city].time) {
+                    appState.cityStatus[city] = { type, title, time: timeMs, rawDate };
+                }
                 if (!appState.cityEvents[city]) appState.cityEvents[city] = [];
                 if (!appState.cityEvents[city].some(e => e.time === timeMs)) {
                     appState.cityEvents[city].push({ type, time: timeMs, rawDate }); appState.cityEvents[city].sort((a, b) => b.time - a.time);
@@ -567,6 +569,26 @@
                 appState.globalEvents.push({ type, time: timeMs, rawDate }); appState.globalEvents.sort((a, b) => b.time - a.time);
                 if (appState.globalEvents.length > 30) appState.globalEvents.length = 30;
             }
+        }
+
+        /**
+         * Auto-close logic:
+         * Iterates through active alerts (RED/ORANGE).
+         * If they've been active for more than 3 hours without a closure from the server,
+         * manually set them to GREEN.
+         */
+        function autoCloseExpiredAlerts() {
+            const now = Date.now();
+            let changed = false;
+            for (const [city, status] of Object.entries(appState.cityStatus)) {
+                if (status.type !== 'GREEN' && (now - status.time) > AUTO_CLOSE_MS) {
+                    const isoNow = new Date().toISOString();
+                    // Update status and push a "virtual" event to the city's timeline to keep consistency
+                    updateCityEventData([city], 'GREEN', 'סגירה אוטומטית (3 שעות)', isoNow);
+                    changed = true;
+                }
+            }
+            if (changed) refreshUI();
         }
 
         async function fetchFullHistory() {
@@ -632,7 +654,6 @@
         let lastClockStr = "";
         function updateClock() {
             const now = new Date();
-            // Robust clock logic: manually pad and format to avoid browser locale variations at midnight
             const h = String(now.getHours()).padStart(2, '0');
             const m = String(now.getMinutes()).padStart(2, '0');
             const s = String(now.getSeconds()).padStart(2, '0');
@@ -656,7 +677,11 @@
         window.onload = () => {
             document.getElementById('proxyInput').value = proxyHost;
             initializeViews(); refreshUI(); fetchLocations(); pollHistory(); checkAlerts();
-            setInterval(checkAlerts, 1000); setInterval(pollHistory, 5000); setInterval(updateClock, 100); setInterval(monitorConnection, 500);
+            setInterval(checkAlerts, 1000);
+            setInterval(pollHistory, 5000);
+            setInterval(updateClock, 100);
+            setInterval(monitorConnection, 500);
+            setInterval(autoCloseExpiredAlerts, 30000); // Check for expired alerts every 30 seconds
         };
     </script>
 </body>
